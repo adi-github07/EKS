@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql     # This name MUST match MYSQL_HOST in flask app
+spec:
+  selector:
+    app: mysql    # Must match MySQL pod label
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
