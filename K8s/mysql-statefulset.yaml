@@ -1,8 +1,12 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: mysql
+  labels:
+    app: mysql
 spec:
+  serviceName: mysql
+  replicas: 1
   selector:
     matchLabels:
       app: mysql
@@ -11,27 +15,53 @@ spec:
       labels:
         app: mysql
     spec:
+      securityContext:
+        fsGroup: 999
       containers:
-      - name:  mysql-ctr
-        image: mysql
-        imagePullPolicy: Always
+      - name: mysql
+        image: mysql:5.7
         env:
-        - name: MYSQL_USER
-          value: "admin"
-        - name: MYSQL_PASSWORD
-          value: "admin"
-        - name: MYSQL_DB
-          value: "myDb"
         - name: MYSQL_ROOT_PASSWORD
-          value: admin                # ✅ REQUIRED
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_ROOT_PASSWORD
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_USER
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_PASSWORD
+        - name: MYSQL_DATABASE
+          value: mydb
         ports:
         - containerPort: 3306
+          name: mysql
         volumeMounts:
-          - name: mysqldata
-            mountPath: /var/lib/mysql    # MySQL data directory inside container
-      volumes:
-      - name: mysqldata
-        persistentVolumeClaim:
-          claimName: mysql-pvc          # PVC must exist
-
+          - name: init-script
+            mountPath: /docker-entrypoint-initdb.d
+          # Inside the mysql container's volumeMounts:
+          - name: mysql-persistent-storage # Matches the PVC template name
+            mountPath: /var/lib/mysql      # The default data directory for MySQL image
+        
+    volumes:
+      - name: init-script
+        configMap:
+          name: mysql-initdb
+          items:
+            - key: init-mysql
+              path: init-mysql.sql
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-persistent-storage
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 512Mi
+        storageClassName: ebc-sc
 
