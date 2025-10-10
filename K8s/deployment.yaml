@@ -24,6 +24,6 @@ spec:
         - name: MYSQL_PASSWORD
           value: "admin"
         - name: MYSQL_DB
-          value: "myDb"
+          value: "mydb"
         ports:
         - containerPort: 5000
