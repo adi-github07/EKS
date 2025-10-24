@@ -2,8 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mysql
-  labels:
-    app: mysql
+  namespace: cicd
 spec:
   serviceName: mysql
   replicas: 1
