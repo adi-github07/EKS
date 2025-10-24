@@ -43,9 +43,12 @@ spec:
         volumeMounts:
           - name: init-script
             mountPath: /docker-entrypoint-initdb.d
-          # Inside the mysql container's volumeMounts:
-          - name: mysql-persistent-storage # Matches the PVC template name
-            mountPath: /var/lib/mysql      # The default data directory for MySQL image
+          - name: mysql-persistent-storage
+            mountPath: /var/lib/mysql
+      volumes:
+          - name: init-script
+            configMap:
+              name: mysql-initdb
   volumeClaimTemplates:
     - metadata:
         name: mysql-persistent-storage
@@ -55,8 +58,8 @@ spec:
           requests:
             storage: 512Mi
         storageClassName: ebc-sc
-
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
