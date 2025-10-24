@@ -4,7 +4,7 @@ metadata:
   name: ebc-sc 
 provisioner: ebs.csi.aws.com
 reclaimPolicy: Retain
-volumeBindingMode: waitForFirstConsumer
+volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
 parameters:
   type: gp3
