@@ -47,14 +47,6 @@ spec:
           # Inside the mysql container's volumeMounts:
           - name: mysql-persistent-storage # Matches the PVC template name
             mountPath: /var/lib/mysql      # The default data directory for MySQL image
-        
-    volumes:
-      - name: init-script
-        configMap:
-          name: mysql-initdb
-          items:
-            - key: init-mysql
-              path: init-mysql.sql
   volumeClaimTemplates:
     - metadata:
         name: mysql-persistent-storage
@@ -65,3 +57,17 @@ spec:
             storage: 512Mi
         storageClassName: ebc-sc
 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql     # This name MUST match MYSQL_HOST in flask app
+spec:
+  clusterIP: None
+  selector:
+    app: mysql    # Must match MySQL pod label
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
+  # Headless service for StatefulSet
